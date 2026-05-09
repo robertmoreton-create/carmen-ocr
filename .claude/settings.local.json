@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(open \"/Users/robert/Projects/PMS Requirements - Copy/pms_dashboard.html\")",
+      "Bash(python3:*)",
+      "WebFetch(domain:aleta.io)",
+      "WebFetch(domain:www.landytech.com)",
+      "Bash(curl:*)",
+      "Read(//Users/robert/.hermes/**)"
+    ]
+  }
+}

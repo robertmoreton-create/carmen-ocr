@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+build/
+scratch/
+
+.DS_Store
+._*
+
+test_output*.xlsx
+*.log
+

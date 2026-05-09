@@ -1,0 +1,7 @@
+{
+  "input_folder": "/Users/robert/Projects/Carmen OCR/Statements/Incoming",
+  "output_folder": "/Users/robert/Projects/Carmen OCR/Statements/Output",
+  "template_workbook": "/Users/robert/Projects/Carmen OCR/Statements/Docs/Su - HSBC One #833 (PayMe) OCR Import 20260422_1756.xlsx",
+  "template_sheet": "26",
+  "sheet_name_format": "%b-%Y"
+}

@@ -1,0 +1,5 @@
+openpyxl
+pypdfium2
+rapidocr-onnxruntime
+pypdf
+pyinstaller

@@ -1,0 +1,7 @@
+{
+  "input_folder": "{APP_DIR}/Statements/Incoming",
+  "output_folder": "{APP_DIR}/Statements/Output",
+  "template_workbook": "{BUNDLE_DIR}/Su - HSBC One #833 (PayMe).xlsx",
+  "template_sheet": "26",
+  "sheet_name_format": "%b-%Y"
+}

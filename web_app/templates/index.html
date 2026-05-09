@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carmen OCR - Statement Processor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            background: #f8f9ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .statement-type {
+            margin-bottom: 20px;
+        }
+
+        .statement-type label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .radio-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: #667eea;
+        }
+
+        .radio-option.selected {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .download-link {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+
+        .download-link:hover {
+            background: #218838;
+        }
+
+        .config-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .config-toggle {
+            color: #667eea;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .config-form {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .config-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-list {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Carmen OCR</h1>
+        <p class="subtitle">Upload your bank or credit card statement PDF</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <p>Drag & drop your PDF here or click to browse</p>
+            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+        </div>
+
+        <div class="file-list" id="fileList" style="display: none;"></div>
+
+        <div class="statement-type">
+            <label>Statement Type</label>
+            <div class="radio-group">
+                <div class="radio-option selected" data-value="hsbc">
+                    <input type="radio" name="type" value="hsbc" checked>
+                    <strong>HSBC</strong>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">Bank Statement</div>
+                </div>
+                <div class="radio-option" data-value="amex">
+                    <input type="radio" name="type" value="amex">
+                    <strong>AMex</strong>
+                    <div style="font-size: 12px; color: #666; margin-top: 4px;">Credit Card</div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" id="processBtn" disabled>Process Statement</button>
+
+        <div class="status" id="status"></div>
+
+        <div class="config-section">
+            <div class="config-toggle" id="configToggle">⚙️ Azure Configuration</div>
+            <div class="config-form" id="configForm">
+                <div class="form-group">
+                    <label>Azure Endpoint</label>
+                    <input type="text" id="endpoint" placeholder="https://your-resource.cognitiveservices.azure.com/">
+                </div>
+                <div class="form-group">
+                    <label>Azure Key</label>
+                    <input type="password" id="key" placeholder="Your Azure Document Intelligence key">
+                </div>
+                <button class="btn btn-primary" id="saveConfig">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const processBtn = document.getElementById('processBtn');
+        const status = document.getElementById('status');
+        const configToggle = document.getElementById('configToggle');
+        const configForm = document.getElementById('configForm');
+        const saveConfig = document.getElementById('saveConfig');
+
+        let selectedFile = null;
+        let statementType = 'hsbc';
+
+        // File upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.pdf')) {
+                showStatus('Please upload a PDF file', 'error');
+                return;
+            }
+            selectedFile = file;
+            fileList.style.display = 'block';
+            fileList.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            processBtn.disabled = false;
+        }
+
+        // Statement type selection
+        document.querySelectorAll('.radio-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                statementType = option.dataset.value;
+            });
+        });
+
+        // Process button
+        processBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            showStatus('Processing statement with Azure...', 'loading');
+            processBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('type', statementType);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showStatus(
+                        `Processed ${result.transactions} transactions. ` +
+                        `<a href="${result.download_url}" class="download-link">Download Excel</a>`,
+                        'success'
+                    );
+                } else {
+                    showStatus(result.error || 'Processing failed', 'error');
+                }
+            } catch (error) {
+                showStatus('Network error: ' + error.message, 'error');
+            } finally {
+                processBtn.disabled = false;
+            }
+        });
+
+        // Config toggle
+        configToggle.addEventListener('click', () => {
+            configForm.classList.toggle('active');
+        });
+
+        // Save config
+        saveConfig.addEventListener('click', async () => {
+            const endpoint = document.getElementById('endpoint').value;
+            const key = document.getElementById('key').value;
+
+            try {
+                const response = await fetch('/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint, key })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showStatus('Configuration saved', 'success');
+                    configForm.classList.remove('active');
+                }
+            } catch (error) {
+                showStatus('Failed to save configuration', 'error');
+            }
+        });
+
+        function showStatus(message, type) {
+            status.innerHTML = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
