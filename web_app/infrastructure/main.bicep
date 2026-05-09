@@ -2,9 +2,9 @@ param location string = resourceGroup().location
 param environment string = 'production'
 param appName string = 'carmen-ocr'
 
-// App Service Plan
+// Shared App Service Plan - Basic tier for multiple apps
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
-  name: '${appName}-plan-${environment}'
+  name: 'shared-plan-${environment}'
   location: location
   sku: {
     name: 'B1'
@@ -19,7 +19,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   }
 }
 
-// App Service
+// App Service for Carmen OCR
 resource appService 'Microsoft.Web/sites@2022-03-01' = {
   name: '${appName}-app-${environment}'
   location: location
@@ -51,7 +51,7 @@ resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' 
 
 // Storage Account for file uploads
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${appName}storage${environment}'
+  name: 'carmenstorage${environment}'
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -88,3 +88,4 @@ resource appSettings 'Microsoft.Web/sites/config@2022-03-01' = {
 output appServiceName string = appService.name
 output appServiceUrl string = 'https://${appService.properties.defaultHostName}'
 output documentIntelligenceEndpoint string = documentIntelligence.properties.endpoint
+output appServicePlanName string = appServicePlan.name
