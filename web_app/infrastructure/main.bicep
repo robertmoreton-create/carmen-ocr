@@ -35,6 +35,41 @@ resource appService 'Microsoft.Web/sites@2022-03-01' = {
   }
 }
 
+// Access Restriction - Allow only specific IP
+resource accessRestriction 'Microsoft.Web/sites/config@2022-03-01' = {
+  parent: appService
+  name: 'web'
+  properties: {
+    ipSecurityRestrictions: [
+      {
+        ipAddress: '84.247.40.92/32'
+        action: 'Allow'
+        priority: 100
+        name: 'Office-IP'
+        description: 'Allow access from office IP'
+      }
+      {
+        ipAddress: 'AzureFrontDoor.Backend'
+        action: 'Allow'
+        priority: 200
+        name: 'AzureFrontDoor'
+        description: 'Allow Azure Front Door'
+        tag: 'ServiceTag'
+      }
+    ]
+    scmIpSecurityRestrictions: [
+      {
+        ipAddress: '84.247.40.92/32'
+        action: 'Allow'
+        priority: 100
+        name: 'Office-IP-SCM'
+        description: 'Allow SCM access from office IP'
+      }
+    ]
+    scmIpSecurityRestrictionsUseMain: false
+  }
+}
+
 // Document Intelligence
 resource documentIntelligence 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   name: '${appName}-di-${environment}'
